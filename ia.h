@@ -13,32 +13,6 @@ void ia_init() {
     pinMode(led, OUTPUT);
 }
 
-/*void ia_update() {
-
-    int dist = right_distance();
-    if(dist > 20 || dist < 0) {
-        analogWrite(led, 0);
-        forward();
-        delay(100);
-    } else if(dist < 5){
-        backward();
-        delay(100);
-    } else {
-
-        analogWrite(led, (20-dist)*255/20);
-
-        int distL = center_distance();
-
-        if(distL > 260) {
-            right();
-        } else {
-            left();
-        }
-        delay(250);
-    }
-    
-}*/
-
 void ia_update() {
 
     int Cdist = center_distance();

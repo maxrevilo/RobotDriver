@@ -15,8 +15,6 @@
 //#define InfraR_Pin0 A8
 
 void sensors_init() {
-    Serial.begin(9600);
-
     pinMode(USound_PinEcho0, INPUT);
     pinMode(USound_PinTrig0, OUTPUT);
 

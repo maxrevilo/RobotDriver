@@ -9,10 +9,13 @@
 
 void setup() {
     //Intento ver sensor
+    Serial.begin(9600);
+    Serial.print("Initializing");
     movement_init();
     sensors_init();
     power_init();
     ia_init();
+    Serial.print("Ready!");
 }
 
 void loop() {
