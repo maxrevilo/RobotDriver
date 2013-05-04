@@ -2,6 +2,9 @@
 #define SENSORS_H
 
 #include <Arduino.h>
+#include <math.h>
+
+#define PI 3.14159265359
 
 #define USound_PinEcho0 4
 #define USound_PinTrig0 3
@@ -14,6 +17,14 @@
 
 //#define InfraR_Pin0 A8
 
+#define WALLS_LEN 3
+#define OPENING_DEGREES 90
+// 0 (Der) ... WALLS_LEN/2 (Centro) ... WALLS_LEN (Izq)
+unsigned char walls[WALLS_LEN];
+
+unsigned char min_rad_dist;
+int wall_df;
+
 void sensors_init() {
     pinMode(USound_PinEcho0, INPUT);
     pinMode(USound_PinTrig0, OUTPUT);
@@ -23,6 +34,12 @@ void sensors_init() {
 
     pinMode(USound_PinEcho2, INPUT);
     pinMode(USound_PinTrig2, OUTPUT);
+
+    int i = WALLS_LEN;
+    while(i-- > 0) {
+        walls[i] = 128;
+    }
+    min_rad_dist = 255;
 }
 
 
@@ -56,6 +73,31 @@ int left_distance() {
 int center_distance() {
     //return InfraR_test(InfraR_Pin0);
     return USound_test(USound_PinEcho0, USound_PinTrig0);
+}
+
+void sensors_update() {
+    //correr motores a 0
+
+    int i = WALLS_LEN;
+    int deg_diff = OPENING_DEGREES / WALLS_LEN;
+
+    float rad_diff = deg_diff / 2 / PI;
+    float degrees = (OPENING_DEGREES - 180) / 2 / PI;
+    
+    while(i-- > 0) {
+        unsigned char cDist = (unsigned char) center_distance();
+
+        walls[i] = cDist * sin(degrees);
+
+        min_rad_dist = cDist < min_rad_dist ? cDist : min_rad_dist;
+
+        //girar deg_diff
+    }
+
+
+
+
+
 }
 
 
