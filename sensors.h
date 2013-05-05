@@ -32,7 +32,7 @@ int USound_test(int echoPin, int trigPin){
     digitalWrite(trigPin, HIGH);
     delayMicroseconds(10);
     digitalWrite(trigPin, LOW);
-    int distance = pulseIn(echoPin, HIGH) / 58;
+    int distance = pulseIn(echoPin, HIGH, 4000) / 58;
     return distance;
 }
 

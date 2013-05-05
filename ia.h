@@ -8,101 +8,59 @@
 
 int led = 2;
 
-char commands_history[3];
-int hist_index;
-
 void ia_init() {
     pinMode(led, OUTPUT);
-
-    commands_history[0] = 0;
-    commands_history[1] = 1;
-    commands_history[2] = 2;
-    hist_index = 0;
-}
-
-void add_command(char command) {
-    commands_history[hist_index % 3] = command;
-    hist_index++;
-}
-
-char isDerp() {
-    char ch0 = commands_history[0];
-    char ch1 = commands_history[1];
-    char ch2 = commands_history[2];
-
-    if(ch0 == 'R' && ch2 == 'R') {
-        return ch1 == 'L';
-    } else if(ch0 == 'L' && ch2 == 'L') {
-        return ch1 != 'R';
-    }
 }
 
 void ia_update() {
-  
-    Serial.print("Hist 0");
-    Serial.println(commands_history[0]);
-    Serial.print("Hist 1");
-    Serial.println(commands_history[1]);
-    Serial.print("Hist 2");
-    Serial.println(commands_history[2]);
-    Serial.println();
-
-
-    if(isDerp()) {
-        analogWrite(led, 0);
-        Serial.println("DERP!!!!!!");
-        left();
-        add_command('\0');
-        delay(750); return;
-    }
-
     int Cdist = center_distance();
     int Rdist = right_distance();
     int Ldist = left_distance();
 
-    if(Rdist < 10 && Ldist < 10) {
-        analogWrite(led, 255);
+    int minDist = (Cdist < Rdist? (Cdist < Ldist? Cdist: Ldist) : (Rdist < Ldist? Rdist : Ldist));
+    int malDist = (Cdist > Rdist? (Cdist > Ldist? Cdist: Ldist) : (Rdist > Ldist? Rdist : Ldist));
 
-        backward();
-        add_command('B');
-        delay(500); return;
-    }
-
-    if(Rdist < 20) {
-        analogWrite(led, (20-Rdist)*255/20);
-        left();
-        add_command('L');
-        delay(250); return;
-    }
-
-    if(Ldist < 20) {
-        analogWrite(led, (20-Ldist)*255/20);
-        right();
-        add_command('R');
-        delay(250); return;
-    }
-
-    if(Cdist < 20) {
-        analogWrite(led, (20-Cdist)*255/20);
-
-        right();
-        add_command('R');
-        delay(500); return;
-    }
-
-    if(Rdist > 20 && Ldist > 20 && Cdist > 20) {
-        analogWrite(led, 0);
+    if(minDist > 15) {
+        //Smoth movements
+        float speedR, speedL;
+        float l, r;
         
-        forward();
-        add_command('F');
-        delay(100);
+        if(Ldist > 60) l = 1.0;
+        else l = (Ldist - 15) / (60 - 15);
+        if(Rdist > 60) r = 1.0;
+        else r = (Rdist - 15) / (60 - 15);
+
+        float tri = ceil(l-r);
+
+        //http://www.livephysics.com/tools/mathematical-tools/online-3-d-function-grapher/?xmin=0&xmax=1&ymin=0&ymax=1&zmin=0&zmax=1&f=ceil%28x-y%29*%28y-x*0.3%2B0.3%29%2B%281-ceil%28x-y%29%29*%28y*0.7%2B0.3%29
+        speedR =     tri*(r-l*0.3+0.3) + (1-tri)*(r*0.7+0.3);
+        //http://www.livephysics.com/tools/mathematical-tools/online-3-d-function-grapher/?xmin=0&xmax=1&ymin=0&ymax=1&zmin=0&zmax=1&f=%281-ceil%28x-y%29%29*%28x-y*0.3%2B0.3%29+%2B+++++ceil%28x-y%29*%28x*0.7%2B0.3%29
+        speedL = (1-tri)*(l-r*0.3+0.3) +     tri*(l*0.7+0.3);
+
+        move(speedR, speedL);
+
+        analogWrite(led, (60-minDist)*255/15);
+    } else {
+        //Hard movements
+        int mR = (float) (Cdist - Rdist);
+        int mL = (float) (Ldist - Cdist);
+
+        /*if(abs(mR - mL) < 3) {
+            move(1.0, -1.0); //Full Left
+            delar(500);
+        }*/
+
+        if(mR + mL > 0) {
+            move(-1.0, 1.0); //Full Right
+        } else {
+            move(1.0, -1.0); //Full Left
+        }
+        
+        analogWrite(led, (15-Rdist)*255/15);
     }
+    
+
     
 }
 
 #endif
-
-
-
-
-
